@@ -1,0 +1,90 @@
+erDiagram
+    STUDENT {
+        string student_id PK
+        string full_name
+        string guardian_id FK
+        string status
+    }
+
+    GUARDIAN {
+        string guardian_id PK
+        string full_name
+        string phone
+        string email
+    }
+
+    CUSTOMER {
+        string customer_id PK
+        string full_name
+        string phone
+        string email
+    }
+
+    VEHICLE {
+        string vehicle_id PK
+        string customer_id FK
+        string description
+        string plate_optional
+    }
+
+    SERVICE {
+        string service_id PK
+        string name
+        boolean available
+        string reason_unavailable
+    }
+
+    SLOT {
+        string slot_id PK
+        date service_date
+        string start_time
+        int duration_minutes
+        int capacity
+        string location
+    }
+
+    BOOKING {
+        string booking_id PK
+        string customer_id FK
+        string vehicle_id FK
+        string slot_id FK
+        string service_id FK
+        string status
+        datetime created_at
+    }
+
+    ATTENDANCE {
+        string attendance_id PK
+        string student_id FK
+        string slot_id FK
+        string status
+        datetime checked_at
+    }
+
+    PAYMENT {
+        string payment_id PK
+        string booking_id FK
+        decimal amount
+        string status
+        datetime paid_at
+    }
+
+    COMPENSATION {
+        string compensation_id PK
+        string student_id FK
+        string slot_id FK
+        decimal amount
+        string status
+    }
+
+    GUARDIAN ||--o{ STUDENT : supervises
+    CUSTOMER ||--o{ VEHICLE : owns
+    CUSTOMER ||--o{ BOOKING : creates
+    VEHICLE ||--o{ BOOKING : assigned_to
+    SLOT ||--o{ BOOKING : receives
+    SERVICE ||--o{ BOOKING : selected_for
+    STUDENT ||--o{ ATTENDANCE : records
+    SLOT ||--o{ ATTENDANCE : tracks
+    BOOKING ||--o| PAYMENT : may_generate
+    STUDENT ||--o{ COMPENSATION : earns
+    SLOT ||--o{ COMPENSATION : generates
