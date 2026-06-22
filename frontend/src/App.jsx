@@ -3,6 +3,7 @@ import {
   createBooking,
   deleteBooking,
   getBookings,
+  getServices,
   getSlots,
 } from "./services/api";
 import "./styles/main.css";
@@ -11,6 +12,7 @@ const initialForm = {
   customerName: "",
   vehicle: "",
   slotId: "",
+  serviceId: "service-exterior-wash",
   notes: "",
 };
 
@@ -39,9 +41,9 @@ function HeroSection({ onOpenModal }) {
     <section className="hero" id="inicio">
       <div className="hero-content">
         <p className="eyebrow">Tecnología + comunidad + aprendizaje</p>
-        <h1>Agenda slots de lavado de autos para prácticas prelaborales.</h1>
+        <h1>Agenda Slots IBEX</h1>
         <p className="hero-copy">
-          IBEX Carwash Slots organiza horarios, clientes y servicios para que
+          IBEX Carwash Slots organiza horarios de media hora para que
           adolescentes practiquen puntualidad, atención al cliente y trabajo en
           equipo en un entorno supervisado.
         </p>
@@ -58,16 +60,16 @@ function HeroSection({ onOpenModal }) {
 
       <aside className="hero-panel" aria-label="Resumen del programa">
         <div>
-          <span className="metric">3</span>
-          <p>slots activos</p>
+          <span className="metric">30</span>
+          <p>minutos por slot</p>
         </div>
         <div>
-          <span className="metric">7</span>
-          <p>lugares disponibles</p>
+          <span className="metric">1</span>
+          <p>servicio activo</p>
         </div>
         <div>
-          <span className="metric">100%</span>
-          <p>flujo responsivo</p>
+          <span className="metric">Aspirado</span>
+          <p>pendiente por equipo</p>
         </div>
       </aside>
     </section>
@@ -92,9 +94,8 @@ function ImpactCards() {
 
   return (
     <section className="section" id="programa">
-      <div className="section-heading">
-        <p className="eyebrow">UI/UX centrado en usuarios reales</p>
-        <h2>Un flujo simple para clientes y coordinadores.</h2>
+      <div className="section-heading compact-heading">
+        <h2>Beneficios:</h2>
       </div>
 
       <div className="card-grid">
@@ -114,7 +115,7 @@ function SlotList({ slots, selectedSlotId, onSelectSlot }) {
     <section className="section" id="slots">
       <div className="section-heading">
         <p className="eyebrow">Disponibilidad</p>
-        <h2>Selecciona un horario de servicio.</h2>
+        <h2>Selecciona un horario de 30 minutos.</h2>
       </div>
 
       <div className="slot-grid">
@@ -127,7 +128,7 @@ function SlotList({ slots, selectedSlotId, onSelectSlot }) {
           >
             <span className="slot-date">{slot.date}</span>
             <strong>{slot.time}</strong>
-            <span>{slot.service}</span>
+            <span>{slot.durationMinutes} minutos</span>
             <small>{slot.location}</small>
             <span className={slot.available > 0 ? "badge" : "badge danger"}>
               {slot.available > 0
@@ -141,7 +142,36 @@ function SlotList({ slots, selectedSlotId, onSelectSlot }) {
   );
 }
 
-function BookingForm({ form, setForm, slots, onSubmit, loading }) {
+function ServiceSelector({ services, selectedServiceId, onChange }) {
+  return (
+    <fieldset className="service-selector">
+      <legend>Servicio solicitado</legend>
+      <div className="service-options">
+        {services.map((service) => (
+          <label
+            className={`service-option ${!service.available ? "disabled-service" : ""}`}
+            key={service.id}
+          >
+            <input
+              type="radio"
+              name="serviceId"
+              value={service.id}
+              checked={selectedServiceId === service.id}
+              onChange={onChange}
+              disabled={!service.available}
+            />
+            <span>
+              <strong>{service.name}</strong>
+              {!service.available && <small>{service.reasonUnavailable}</small>}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function BookingForm({ form, setForm, slots, services, onSubmit, loading }) {
   function handleChange(event) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
@@ -188,11 +218,17 @@ function BookingForm({ form, setForm, slots, onSubmit, loading }) {
             <option value="">Selecciona un slot</option>
             {slots.map((slot) => (
               <option key={slot.id} value={slot.id} disabled={slot.available <= 0}>
-                {slot.date} {slot.time} — {slot.service}
+                {slot.date} {slot.time} — {slot.durationMinutes} min.
               </option>
             ))}
           </select>
         </label>
+
+        <ServiceSelector
+          services={services}
+          selectedServiceId={form.serviceId}
+          onChange={handleChange}
+        />
 
         <label className="full">
           Notas
@@ -200,7 +236,7 @@ function BookingForm({ form, setForm, slots, onSubmit, loading }) {
             name="notes"
             value={form.notes}
             onChange={handleChange}
-            placeholder="Ej. Cliente solicita aspirado adicional."
+            placeholder="Ej. Cliente solicita cuidado especial en rines."
             rows="3"
           />
         </label>
@@ -213,7 +249,7 @@ function BookingForm({ form, setForm, slots, onSubmit, loading }) {
   );
 }
 
-function BookingTable({ bookings, slotsById, onDelete }) {
+function BookingTable({ bookings, slotsById, servicesById, onDelete }) {
   return (
     <section className="section" id="reservas">
       <div className="section-heading">
@@ -228,6 +264,7 @@ function BookingTable({ bookings, slotsById, onDelete }) {
               <th>Cliente</th>
               <th>Vehículo</th>
               <th>Slot</th>
+              <th>Servicio</th>
               <th>Notas</th>
               <th>Acción</th>
             </tr>
@@ -235,13 +272,17 @@ function BookingTable({ bookings, slotsById, onDelete }) {
           <tbody>
             {bookings.map((booking) => {
               const slot = slotsById[booking.slotId];
+              const service = servicesById[booking.serviceId];
               return (
                 <tr key={booking.id}>
                   <td>{booking.customerName}</td>
                   <td>{booking.vehicle}</td>
                   <td>
-                    {slot ? `${slot.date} ${slot.time}` : "Slot no encontrado"}
+                    {slot
+                      ? `${slot.date} ${slot.time} (${slot.durationMinutes} min.)`
+                      : "Slot no encontrado"}
                   </td>
+                  <td>{service ? service.name : "Servicio no encontrado"}</td>
                   <td>{booking.notes || "Sin notas"}</td>
                   <td>
                     <button
@@ -282,14 +323,15 @@ function InfoModal({ onClose }) {
         <p className="eyebrow">Flujo principal</p>
         <h2 id="modal-title">¿Cómo funciona IBEX Carwash Slots?</h2>
         <ol>
-          <li>El cliente revisa slots disponibles.</li>
+          <li>El cliente revisa slots de 30 minutos disponibles.</li>
+          <li>Selecciona un servicio disponible.</li>
           <li>Registra nombre, vehículo y horario.</li>
           <li>El sistema valida cupo y crea la reserva.</li>
-          <li>El coordinador puede consultar o eliminar registros.</li>
         </ol>
         <p>
-          En siguientes fases, el modelo puede crecer hacia login, asistencia,
-          pagos, remuneraciones y reportes de desempeño.
+          El aspirado interior aparece deshabilitado porque todavía no se cuenta
+          con equipo de aspirado. Esta decisión refleja una regla de negocio del
+          prototipo actual.
         </p>
       </article>
     </div>
@@ -307,6 +349,7 @@ function Footer() {
 }
 
 export default function App() {
+  const [services, setServices] = useState([]);
   const [slots, setSlots] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -322,11 +365,20 @@ export default function App() {
     }, {});
   }, [slots]);
 
+  const servicesById = useMemo(() => {
+    return services.reduce((acc, service) => {
+      acc[service.id] = service;
+      return acc;
+    }, {});
+  }, [services]);
+
   async function loadData() {
-    const [slotsResponse, bookingsResponse] = await Promise.all([
+    const [servicesResponse, slotsResponse, bookingsResponse] = await Promise.all([
+      getServices(),
       getSlots(),
       getBookings(),
     ]);
+    setServices(servicesResponse.data);
     setSlots(slotsResponse.data);
     setBookings(bookingsResponse.data);
   }
@@ -396,12 +448,14 @@ export default function App() {
           form={form}
           setForm={setForm}
           slots={slots}
+          services={services}
           onSubmit={handleSubmit}
           loading={loading}
         />
         <BookingTable
           bookings={bookings}
           slotsById={slotsById}
+          servicesById={servicesById}
           onDelete={handleDelete}
         />
       </main>
