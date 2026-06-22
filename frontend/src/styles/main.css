@@ -444,3 +444,54 @@ th {
     width: 100%;
   }
 }
+
+.service-selector {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.service-selector legend {
+  margin-bottom: 0.4rem;
+  color: #344054;
+  font-weight: 800;
+}
+
+.service-options {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.service-option {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  border: 1px solid #d0d5dd;
+  border-radius: 1rem;
+  padding: 0.85rem 1rem;
+  background: white;
+}
+
+.service-option input {
+  width: auto;
+  margin-top: 0.2rem;
+}
+
+.service-option small {
+  display: block;
+  color: #667085;
+  font-weight: 600;
+}
+
+.disabled-service {
+  color: #98a2b3;
+  background: #f2f4f7;
+  filter: grayscale(1);
+  opacity: 0.72;
+}
+
+.compact-heading {
+  margin-bottom: 1rem;
+}

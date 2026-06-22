@@ -191,7 +191,7 @@ function BookingForm({ form, setForm, slots, services, onSubmit, loading }) {
             name="customerName"
             value={form.customerName}
             onChange={handleChange}
-            placeholder="Ej. Rodrigo Garza"
+            placeholder="Ej. Carlos Gómez"
             required
           />
         </label>
