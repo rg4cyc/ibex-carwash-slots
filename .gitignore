@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+build/
+
+# environment
+.env
+.env.local
+
+# logs
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store
+
+# archives
+*.zip
+
+# screenshots temp
+assets/screenshots/temp/
