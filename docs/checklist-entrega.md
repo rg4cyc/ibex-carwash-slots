@@ -36,3 +36,8 @@
 - Vista móvil se ve correctamente.
 - README está actualizado.
 - Git status limpio.
+
+## Enlaces de entrega
+
+- Repositorio GitHub: https://github.com/rg4cyc/ibex-carwash-slots
+- Video demostrativo: pendiente de agregar
